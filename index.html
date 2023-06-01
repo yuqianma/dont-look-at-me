@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Don't Look At Me When I'm Coding</title>
+	<style>
+		video {
+			clear: both;
+			display: block;
+			transform: rotateY(180deg);
+		}
+
+		.output_canvas {
+			transform: rotateY(180deg);
+		}
+	</style>
+</head>
+<body>
+	<div style="position: relative;">
+		<video id="webcam" style="position: absolute" autoplay playsinline></video>
+		<canvas class="output_canvas" id="output_canvas" style="position: absolute; left: 0px; top: 0px;"></canvas>
+	</div>
+</body>
+<script src="./index.mjs" type="module"></script>
+</html>
