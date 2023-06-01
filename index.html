@@ -6,6 +6,18 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Don't Look At Me When I'm Coding</title>
 	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000;
+			color: #fff;
+			font-family: sans-serif;
+		}
+		#face-debug-container {
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+		}
 		video {
 			clear: both;
 			display: block;
@@ -15,12 +27,37 @@
 		.output_canvas {
 			transform: rotateY(180deg);
 		}
+
+		.blend-shapes-item {
+			display: flex;
+			align-items: center;
+			height: 20px;
+			width: 300px;
+		}
+
+		.blend-shapes-label {
+			display: flex;
+			width: 120px;
+			justify-content: flex-end;
+			align-items: center;
+			margin-right: 4px;
+		}
+
+		.blend-shapes-value {
+			display: flex;
+			height: 16px;
+			align-items: center;
+			background-color: #007f8b;
+		}
 	</style>
 </head>
 <body>
-	<div style="position: relative;">
-		<video id="webcam" style="position: absolute" autoplay playsinline></video>
-		<canvas class="output_canvas" id="output_canvas" style="position: absolute; left: 0px; top: 0px;"></canvas>
+	<div id="face-debug-container">
+		<div style="position: relative;">
+			<video id="webcam" autoplay playsinline></video>
+			<canvas class="output_canvas" id="output_canvas" style="position: absolute; left: 0px; top: 0px;"></canvas>
+		</div>
+		<ul id="faceBlendshapes"></ul>
 	</div>
 </body>
 <script src="./index.mjs" type="module"></script>

@@ -1,6 +1,8 @@
 import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 const { FaceLandmarker, FilesetResolver, DrawingUtils } = vision;
 
+const EYE_NOT_DETECTION_DELAY = 500;
+
 let faceLandmarker;
 let webcamRunning = false;
 const videoWidth = 480;
@@ -18,7 +20,7 @@ async function runDemo() {
       modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
       delegate: "GPU"
     },
-    // outputFaceBlendshapes: true,
+    outputFaceBlendshapes: true,
     runningMode: "VIDEO",
     numFaces: 1
   });
@@ -108,8 +110,77 @@ async function predictWebcam() {
     }
   }
 
+  // display faceBlendshapes in document
+  if (results.faceBlendshapes[0]) {
+    const faceBlendshapesElement = document.getElementById(
+      "faceBlendshapes"
+    );
+    const faceBlendshapes = results.faceBlendshapes[0].categories;
+    let htmlMaker = "";
+    faceBlendshapes.filter((s) => s.categoryName.startsWith("eye")).forEach((shape) => {
+      htmlMaker += `
+      <li class="blend-shapes-item">
+        <span class="blend-shapes-label">${
+          shape.displayName || shape.categoryName
+        }</span>
+        <span class="blend-shapes-value" style="width: calc(${
+          +shape.score * 100
+        }% - 120px)">${(+shape.score).toFixed(4)}</span>
+      </li>
+    `;
+    });
+    faceBlendshapesElement.innerHTML = htmlMaker;
+
+    const detected = faceBlendshapes.filter((s) => s.categoryName.startsWith("eyeLook")).every((shape) => shape.score < 0.6);
+    if (detected) {
+      onDetected();
+    } else {
+      onNotDetected();
+    }
+  } else {
+    console.log("no faceBlendshapes");
+    onNotDetected();
+  }
+
   // Call this function again to keep predicting when the browser is ready.
   if (webcamRunning === true) {
     window.requestAnimationFrame(predictWebcam);
   }
 }
+
+let lastDetected = false;
+let eyeDetectionTimeoutId = undefined;
+
+function onDetected() {
+  if (eyeDetectionTimeoutId) {
+    clearTimeout(eyeDetectionTimeoutId);
+    eyeDetectionTimeoutId = undefined;
+  }
+  if (lastDetected === true) {
+    return;
+  }
+  lastDetected = true;
+  console.log("detected");
+  document.body.style.backgroundColor = "#e55";
+}
+
+function _onNotDetected() {
+  if (lastDetected === false) {
+    return;
+  }
+  lastDetected = false;
+  console.log("not detected");
+  document.body.style.backgroundColor = "";
+}
+
+function onNotDetected() {
+  if (eyeDetectionTimeoutId) {
+    // countdown is running
+    return;
+  }
+  eyeDetectionTimeoutId = setTimeout(() => {
+    eyeDetectionTimeoutId = undefined;
+    _onNotDetected();
+  }, EYE_NOT_DETECTION_DELAY);
+}
+
