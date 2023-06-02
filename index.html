@@ -26,7 +26,13 @@
 			display: flex;
 			flex-direction: row;
 			justify-content: center;
+			display: none;
 		}
+
+		#face-video-container {
+			position: relative;
+		}
+
 		video {
 			clear: both;
 			display: block;
@@ -65,7 +71,7 @@
 	<div id="editor-container"></div>
 
 	<div id="face-debug-container">
-		<div style="position: relative;">
+		<div id="face-video-container">
 			<video id="webcam" autoplay playsinline></video>
 			<canvas class="output_canvas" id="output_canvas" style="position: absolute; left: 0px; top: 0px;"></canvas>
 		</div>

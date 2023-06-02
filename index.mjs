@@ -38,9 +38,14 @@ const canvasCtx = canvasElement.getContext("2d");
 
 document.addEventListener("keydown", (event) => {
 	if (event.code === "Space") {
-		enableCam();
+    start();
 	}
 });
+
+function start() {
+		enableCam();
+    startTyping();
+}
 
 // Enable the live webcam view and start detection.
 function enableCam(event) {
@@ -138,7 +143,7 @@ async function predictWebcam() {
       onNotDetected();
     }
   } else {
-    console.log("no faceBlendshapes");
+    // console.log("no faceBlendshapes");
     onNotDetected();
   }
 
@@ -161,7 +166,8 @@ function onDetected() {
   }
   lastDetected = true;
   console.log("detected");
-  document.body.style.backgroundColor = "#e55";
+  // document.body.style.backgroundColor = "#e55";
+  stopTyping();
 }
 
 function _onNotDetected() {
@@ -170,7 +176,8 @@ function _onNotDetected() {
   }
   lastDetected = false;
   console.log("not detected");
-  document.body.style.backgroundColor = "";
+  // document.body.style.backgroundColor = "";
+  startTyping();
 }
 
 function onNotDetected() {
@@ -184,27 +191,69 @@ function onNotDetected() {
   }, EYE_NOT_DETECTION_DELAY);
 }
 
+let editor;
+let fileHistoryJSON;
 
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.38.0/min/vs' } });
 
 require(['vs/editor/editor.main'], async function () {
-  const editor = monaco.editor.create(document.getElementById('editor-container'), {
+  editor = monaco.editor.create(document.getElementById('editor-container'), {
     value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
     language: 'javascript',
+    minimap: {
+      enabled: false
+    },
     theme: "vs-dark",
   });
 
   window._editor = editor;
 
-  const fileHistoryJSON = await fetch("./data/file-history.json").then((res) => res.json());
-  editor.setValue(fileHistoryJSON.history[0].content);
-
-  for (let i = 1; i < fileHistoryJSON.history.length; ++i) {
-    const history = fileHistoryJSON.history[i];
-    await new Promise((resolve) => setTimeout(() => {
-      editor.setValue(history.content);
-      editor.revealLineInCenter(history.from_line_number);
-      resolve();
-    }, 100));
-  }
+  feedEditor(editor);
 });
+
+const TYPING_INTERVAL = 100;
+
+let isReplaying = false;
+let historyIndex = 0;
+let lastTypingTime = Date.now();
+
+function typeNext() {
+  historyIndex = (++historyIndex) % fileHistoryJSON.history.length;
+  const history = fileHistoryJSON.history[historyIndex];
+  // console.log(historyIndex, history);
+  if (historyIndex === 0) {
+    editor.revealLineInCenter(1);
+  }
+
+  editor.setValue(history.content);
+  if (history.from_line_number) {
+    // console.log("revealLineInCenter", history.from_line_number);
+    editor.revealLineInCenter(history.from_line_number);
+  }
+}
+
+function replayTyping() {
+  const now = Date.now();
+  if (now - lastTypingTime > TYPING_INTERVAL) {
+    lastTypingTime = now;
+    typeNext();
+  }
+
+  if (isReplaying) {
+    requestAnimationFrame(replayTyping);
+  }
+}
+
+function startTyping() {
+  isReplaying = true;
+  replayTyping();
+}
+
+function stopTyping() {
+  isReplaying = false;
+}
+
+async function feedEditor(editor) {
+  fileHistoryJSON = await fetch("./data/file-history.json").then((res) => res.json());
+  editor.setValue(fileHistoryJSON.history[0].content);
+}
