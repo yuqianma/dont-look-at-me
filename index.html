@@ -14,6 +14,25 @@
 			font-family: sans-serif;
 		}
 
+		#reflection-container {
+			position: fixed;
+			top: 0;
+			width: 100vw;
+			height: 100vh;
+			z-index: -1;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		#reflection-container video {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transform: rotateY(180deg);
+			opacity: 0.1;
+		}
+
 		#editor-container {
 			height: 100vh;
 			width: 100vw;
@@ -33,7 +52,7 @@
 			position: relative;
 		}
 
-		video {
+		#webcam {
 			clear: both;
 			display: block;
 			transform: rotateY(180deg);
@@ -68,6 +87,14 @@
 	<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.38.0/min/vs/loader.js"></script>
 </head>
 <body>
+	<div id="reflection-container">
+		<video id="reflection-video-1" autoplay loop muted>
+			<source src="./assets/face1.webm" type="video/webm">
+		</video>
+		<video id="reflection-video-2" muted style="display: none;">
+			<source src="./assets/face2.webm" type="video/webm">
+		</video>
+	</div>
 	<div id="editor-container"></div>
 
 	<div id="face-debug-container">

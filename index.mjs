@@ -29,6 +29,9 @@ async function runDemo() {
 }
 runDemo();
 
+const reflectionVideo1 = document.getElementById("reflection-video-1");
+const reflectionVideo2 = document.getElementById("reflection-video-2");
+
 const video = document.getElementById("webcam");
 const canvasElement = document.getElementById(
   "output_canvas"
@@ -197,13 +200,21 @@ let fileHistoryJSON;
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.38.0/min/vs' } });
 
 require(['vs/editor/editor.main'], async function () {
+  monaco.editor.defineTheme("myCustomTheme", {
+    base: "vs-dark",
+    inherit: true,
+    rules: [],
+    colors: {
+      "editor.background": "#00000000",
+    }
+  });
   editor = monaco.editor.create(document.getElementById('editor-container'), {
     value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
     language: 'javascript',
     minimap: {
       enabled: false
     },
-    theme: "vs-dark",
+    theme: "myCustomTheme",
   });
 
   window._editor = editor;
@@ -228,7 +239,7 @@ function typeNext() {
   editor.setValue(history.content);
   if (history.from_line_number) {
     // console.log("revealLineInCenter", history.from_line_number);
-    editor.revealLineInCenter(history.from_line_number);
+    editor.revealLineInCenter(history.from_line_number, monaco.editor.ScrollType.Smooth);
   }
 }
 
@@ -246,11 +257,18 @@ function replayTyping() {
 
 function startTyping() {
   isReplaying = true;
+  reflectionVideo1.style.display = "";
+  reflectionVideo2.style.display = "none";
+  reflectionVideo2.pause();
+  reflectionVideo2.currentTime = 0;
   replayTyping();
 }
 
 function stopTyping() {
   isReplaying = false;
+  reflectionVideo2.style.display = "";
+  reflectionVideo1.style.display = "none";
+  reflectionVideo2.play();
 }
 
 async function feedEditor(editor) {
