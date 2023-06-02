@@ -197,10 +197,11 @@ function onNotDetected() {
 
 let editor;
 let fileHistoryJSON;
+let keystrokes;
 
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.38.0/min/vs' } });
 
-require(['vs/editor/editor.main'], async function () {
+require(['vs/editor/editor.main'], function () {
   monaco.editor.defineTheme("myCustomTheme", {
     base: "vs-dark",
     inherit: true,
@@ -223,11 +224,78 @@ require(['vs/editor/editor.main'], async function () {
   feedEditor(editor);
 });
 
-const TYPING_INTERVAL = 100;
+const TYPING_INTERVAL = 1000;
 
 let isReplaying = false;
 let historyIndex = 0;
 let lastTypingTime = Date.now();
+
+let keystrokeIndexStart = -1;
+let keystrokeIndex = -1;
+const MAX_KEYSTROKES_TO_FIND = 100;
+
+async function feedEditor(editor) {
+  fileHistoryJSON = await fetch("./data/file-history.json").then((res) => res.json());
+
+  fileHistoryJSON.history.forEach((h) => h.created_at = new Date(h.created_at));
+
+  keystrokes = await fetch("./data/keystrokes.log")
+    .then((res) => res.text())
+    .then((text) => text.trim()
+      .split("\n")
+      .map((line) => JSON.parse(line))
+      .filter((k) => k.data)
+    );
+
+  console.log(keystrokes);
+
+  keystrokes.forEach((k) => k.timestamp = new Date(k.timestamp));
+
+  const begin = fileHistoryJSON.history[1].created_at;
+  keystrokeIndexStart = keystrokes.findIndex((k) => Math.abs(k.timestamp - begin) < 100);
+  console.log("keystrokeIndexStart", keystrokeIndexStart);
+  keystrokeIndex = keystrokeIndexStart;
+
+  editor.setValue(fileHistoryJSON.history[0].content);
+}
+
+const keystrokeIndicator = document.getElementById("keystroke-indicator");
+
+function displayKeystrokes(keystrokes) {
+  const keys = keystrokes.map((k) => {
+    const key = k.data.key;
+    switch (key) {
+      case "Backspace":
+        return "⌫";
+      case "Enter":
+        return "⏎";
+      case "Tab":
+        return "⇥";
+      case " ":
+        return "␣";
+      case "Control":
+        return "⌃";
+      case "Shift":
+        return "⇧";
+      case "Alt":
+        return "⌥";
+      case "Meta":
+        return "⌘";
+      case "ArrowUp":
+        return "↑";
+      case "ArrowDown":
+        return "↓";
+      case "ArrowLeft":
+        return "←";
+      case "ArrowRight":
+        return "→";
+      default:
+        return key;
+    }
+  });
+  console.log("keystrokes:", ...keys, keystrokes);
+  keystrokeIndicator.textContent = keys.join(" ");
+}
 
 function typeNext() {
   historyIndex = (++historyIndex) % fileHistoryJSON.history.length;
@@ -235,7 +303,27 @@ function typeNext() {
   // console.log(historyIndex, history);
   if (historyIndex === 0) {
     editor.revealLineInCenter(1);
+    keystrokeIndex = keystrokeIndexStart;
   }
+
+  let keystrokesForThisHistory = [];
+
+  for (let i = 0; i < MAX_KEYSTROKES_TO_FIND; i++) {
+    ++keystrokeIndex;
+    const keystroke = keystrokes[keystrokeIndex];
+    const delta = keystroke.timestamp - history.created_at;
+    if (delta < 200) {
+      if (delta > -200) {
+        keystrokesForThisHistory.push(keystroke);
+      }
+      // not this file's keystroke
+    } else {
+      // passed this history
+      break;
+    }
+  }
+
+  displayKeystrokes(keystrokesForThisHistory);
 
   editor.setValue(history.content);
   if (history.from_line_number) {
@@ -275,9 +363,4 @@ function stopTyping() {
   reflectionVideo2.play();
 
   typingAudio.pause();
-}
-
-async function feedEditor(editor) {
-  fileHistoryJSON = await fetch("./data/file-history.json").then((res) => res.json());
-  editor.setValue(fileHistoryJSON.history[0].content);
 }
