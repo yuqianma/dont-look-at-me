@@ -184,3 +184,27 @@ function onNotDetected() {
   }, EYE_NOT_DETECTION_DELAY);
 }
 
+
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.38.0/min/vs' } });
+
+require(['vs/editor/editor.main'], async function () {
+  const editor = monaco.editor.create(document.getElementById('editor-container'), {
+    value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
+    language: 'javascript',
+    theme: "vs-dark",
+  });
+
+  window._editor = editor;
+
+  const fileHistoryJSON = await fetch("./data/file-history.json").then((res) => res.json());
+  editor.setValue(fileHistoryJSON.history[0].content);
+
+  for (let i = 1; i < fileHistoryJSON.history.length; ++i) {
+    const history = fileHistoryJSON.history[i];
+    await new Promise((resolve) => setTimeout(() => {
+      editor.setValue(history.content);
+      editor.revealLineInCenter(history.from_line_number);
+      resolve();
+    }, 100));
+  }
+});
