@@ -31,6 +31,7 @@ runDemo();
 
 const reflectionVideo1 = document.getElementById("reflection-video-1");
 const reflectionVideo2 = document.getElementById("reflection-video-2");
+const typingAudio = document.getElementById("typing-audio");
 
 const video = document.getElementById("webcam");
 const canvasElement = document.getElementById(
@@ -261,6 +262,9 @@ function startTyping() {
   reflectionVideo2.style.display = "none";
   reflectionVideo2.pause();
   reflectionVideo2.currentTime = 0;
+  
+  typingAudio.play();
+
   replayTyping();
 }
 
@@ -269,6 +273,8 @@ function stopTyping() {
   reflectionVideo2.style.display = "";
   reflectionVideo1.style.display = "none";
   reflectionVideo2.play();
+
+  typingAudio.pause();
 }
 
 async function feedEditor(editor) {
