@@ -224,7 +224,7 @@ require(['vs/editor/editor.main'], function () {
   feedEditor(editor);
 });
 
-const TYPING_INTERVAL = 1000;
+const TYPING_INTERVAL = 100;
 
 let isReplaying = false;
 let historyIndex = 0;
@@ -323,7 +323,7 @@ function typeNext() {
     }
   }
 
-  displayKeystrokes(keystrokesForThisHistory);
+  // displayKeystrokes(keystrokesForThisHistory);
 
   editor.setValue(history.content);
   if (history.from_line_number) {
