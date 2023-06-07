@@ -10,7 +10,7 @@ const videoWidth = 480;
 // Before we can use HandLandmarker class we must wait for it to finish
 // loading. Machine Learning models can be large and take a moment to
 // get everything needed to run.
-async function runDemo() {
+async function loadFaceLandmarkModel() {
   // Read more `CopyWebpackPlugin`, copy wasm set from "https://cdn.skypack.dev/node_modules" to `/wasm`
   const filesetResolver = await FilesetResolver.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
@@ -24,10 +24,9 @@ async function runDemo() {
     runningMode: "VIDEO",
     numFaces: 1
   });
-
-	// enableCam();
 }
-runDemo();
+
+const coverDom = document.getElementById("cover");
 
 const reflectionVideo1 = document.getElementById("reflection-video-1");
 const reflectionVideo2 = document.getElementById("reflection-video-2");
@@ -45,11 +44,6 @@ document.addEventListener("keydown", (event) => {
     start();
 	}
 });
-
-function start() {
-		enableCam();
-    startTyping();
-}
 
 // Enable the live webcam view and start detection.
 function enableCam(event) {
@@ -200,28 +194,32 @@ let fileHistoryJSON;
 
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.38.0/min/vs' } });
 
-require(['vs/editor/editor.main'], function () {
-  monaco.editor.defineTheme("myCustomTheme", {
-    base: "vs-dark",
-    inherit: true,
-    rules: [],
-    colors: {
-      "editor.background": "#00000000",
-    }
+async function loadEditor() {
+  return new Promise((resolve) => {
+    require(['vs/editor/editor.main'], function () {
+      monaco.editor.defineTheme("myCustomTheme", {
+        base: "vs-dark",
+        inherit: true,
+        rules: [],
+        colors: {
+          "editor.background": "#00000000",
+        }
+      });
+      editor = monaco.editor.create(document.getElementById('editor-container'), {
+        value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
+        language: 'javascript',
+        minimap: {
+          enabled: false
+        },
+        theme: "myCustomTheme",
+      });
+    
+      window._editor = editor;
+    
+      resolve(editor);
+    });
   });
-  editor = monaco.editor.create(document.getElementById('editor-container'), {
-    value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
-    language: 'javascript',
-    minimap: {
-      enabled: false
-    },
-    theme: "myCustomTheme",
-  });
-
-  window._editor = editor;
-
-  feedEditor(editor);
-});
+}
 
 const TYPING_INTERVAL = 100;
 
@@ -284,3 +282,27 @@ function stopTyping() {
 
   typingAudio.pause();
 }
+
+function start() {
+  enableCam();
+  startTyping();
+}
+
+async function main() {
+  Promise.all([
+    loadEditor(),
+    loadFaceLandmarkModel()
+  ]).then(async ([editor]) => {
+    await feedEditor(editor);
+
+    coverDom.textContent = "Click to start";
+    coverDom.style.cursor = "pointer";
+
+    coverDom.addEventListener("click", () => {
+      coverDom.style.display = "none";
+      start();
+    });
+  });
+}
+
+main();

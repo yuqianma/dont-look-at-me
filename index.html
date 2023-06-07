@@ -83,6 +83,20 @@
 			align-items: center;
 			background-color: #007f8b;
 		}
+
+		#cover {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: fixed;
+			width: 100vw;
+			height: 100vh;
+			top: 0;
+			left: 0;
+			opacity: 0.8;
+			background: #000;
+			z-index: 9999;
+		}
 	</style>
 	<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.38.0/min/vs/loader.js"></script>
 </head>
@@ -104,6 +118,8 @@
 		</div>
 		<ul id="faceBlendshapes"></ul>
 	</div>
+
+	<div id="cover">Loading...</div>
 
 	<audio id="typing-audio" src="./assets/typing.mp3" preload="auto" loop style="display: none;"></audio>
 </body>
