@@ -1,11 +1,35 @@
 import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 const { FaceLandmarker, FilesetResolver, DrawingUtils } = vision;
 
+const IS_DEBUG = false;
+
 const EYE_NOT_DETECTION_DELAY = 500;
 
 let faceLandmarker;
 let webcamRunning = false;
 const videoWidth = 480;
+
+const faceBlendshapesElement = document.getElementById("faceBlendshapes");
+function displayDebugInfo(results) {
+  if (!IS_DEBUG) {
+    return;
+  }
+  const faceBlendshapes = results.faceBlendshapes[0].categories;
+  let htmlMaker = "";
+  faceBlendshapes.filter((s) => s.categoryName.startsWith("eye")).forEach((shape) => {
+    htmlMaker += `
+    <li class="blend-shapes-item">
+      <span class="blend-shapes-label">${
+        shape.displayName || shape.categoryName
+      }</span>
+      <span class="blend-shapes-value" style="width: calc(${
+        +shape.score * 100
+      }% - 120px)">${(+shape.score).toFixed(4)}</span>
+    </li>
+  `;
+  });
+  faceBlendshapesElement.innerHTML = htmlMaker;
+}
 
 // Before we can use HandLandmarker class we must wait for it to finish
 // loading. Machine Learning models can be large and take a moment to
@@ -77,10 +101,10 @@ async function predictWebcam() {
   const radio = video.videoHeight / video.videoWidth;
   video.style.width = videoWidth + "px";
   video.style.height = videoWidth * radio + "px";
-  canvasElement.style.width = videoWidth + "px";
-  canvasElement.style.height = videoWidth * radio + "px";
-  canvasElement.width = video.videoWidth;
-  canvasElement.height = video.videoHeight;
+  // canvasElement.style.width = videoWidth + "px";
+  // canvasElement.style.height = videoWidth * radio + "px";
+  // canvasElement.width = video.videoWidth;
+  // canvasElement.height = video.videoHeight;
   
   let nowInMs = Date.now();
   if (lastVideoTime !== video.currentTime) {
@@ -88,51 +112,35 @@ async function predictWebcam() {
     results = faceLandmarker.detectForVideo(video, nowInMs);
 		window._results = results;
   }
-  if (results.faceLandmarks) {
-    for (const landmarks of results.faceLandmarks) {
-      drawingUtils.drawConnectors(
-        landmarks,
-        FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
-        { color: "#FF3030" }
-      );
-      drawingUtils.drawConnectors(
-        landmarks,
-        FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
-        { color: "#30FF30" }
-      );
-      drawingUtils.drawConnectors(
-        landmarks,
-        FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS,
-        { color: "#FF3030" }
-      );
-      drawingUtils.drawConnectors(
-        landmarks,
-        FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS,
-        { color: "#30FF30" }
-      );
-    }
-  }
+  // if (results.faceLandmarks) {
+  //   for (const landmarks of results.faceLandmarks) {
+  //     drawingUtils.drawConnectors(
+  //       landmarks,
+  //       FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
+  //       { color: "#FF3030" }
+  //     );
+  //     drawingUtils.drawConnectors(
+  //       landmarks,
+  //       FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
+  //       { color: "#30FF30" }
+  //     );
+  //     drawingUtils.drawConnectors(
+  //       landmarks,
+  //       FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS,
+  //       { color: "#FF3030" }
+  //     );
+  //     drawingUtils.drawConnectors(
+  //       landmarks,
+  //       FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS,
+  //       { color: "#30FF30" }
+  //     );
+  //   }
+  // }
 
   // display faceBlendshapes in document
   if (results.faceBlendshapes[0]) {
-    const faceBlendshapesElement = document.getElementById(
-      "faceBlendshapes"
-    );
     const faceBlendshapes = results.faceBlendshapes[0].categories;
-    let htmlMaker = "";
-    faceBlendshapes.filter((s) => s.categoryName.startsWith("eye")).forEach((shape) => {
-      htmlMaker += `
-      <li class="blend-shapes-item">
-        <span class="blend-shapes-label">${
-          shape.displayName || shape.categoryName
-        }</span>
-        <span class="blend-shapes-value" style="width: calc(${
-          +shape.score * 100
-        }% - 120px)">${(+shape.score).toFixed(4)}</span>
-      </li>
-    `;
-    });
-    faceBlendshapesElement.innerHTML = htmlMaker;
+    displayDebugInfo(results);
 
     const detected = faceBlendshapes.filter((s) => s.categoryName.startsWith("eyeLook")).every((shape) => shape.score < 0.6);
     if (detected) {
@@ -212,6 +220,8 @@ async function loadEditor() {
           enabled: false
         },
         theme: "myCustomTheme",
+        // readOnly: true,
+        fontSize: 18,
       });
     
       window._editor = editor;
@@ -281,12 +291,25 @@ function stopTyping() {
   reflectionVideo2.play();
 
   typingAudio.pause();
+
+  const history = fileHistoryJSON.history[historyIndex];
+  if (history.from_line_number) {
+    setTimeout(() => {
+      const column = editor.getModel().getLineContent(history.from_line_number).length + 1;
+      editor.setPosition({ lineNumber: history.from_line_number, column });
+      editor.focus();
+    }, 0);
+  }
 }
 
 function start() {
+  coverDom.style.display = "none";
   enableCam();
   startTyping();
 }
+
+const query = new URLSearchParams(window.location.search);
+const isDev = query.has("dev");
 
 async function main() {
   Promise.all([
@@ -295,11 +318,15 @@ async function main() {
   ]).then(async ([editor]) => {
     await feedEditor(editor);
 
+    if (isDev) {
+      start();
+      return;
+    }
+
     coverDom.textContent = "Click to start";
     coverDom.style.cursor = "pointer";
 
     coverDom.addEventListener("click", () => {
-      coverDom.style.display = "none";
       start();
     });
   });

@@ -42,6 +42,7 @@
 			position: fixed;
 			top: 0;
 			width: 100vw;
+			height: 100vh;
 			display: flex;
 			flex-direction: row;
 			justify-content: center;
@@ -60,6 +61,12 @@
 
 		.output_canvas {
 			transform: rotateY(180deg);
+		}
+
+		#faceBlendshapes {
+			position: fixed;
+			top: 0;
+			right: 0;
 		}
 
 		.blend-shapes-item {
@@ -105,7 +112,7 @@
 		<video id="reflection-video-1" autoplay loop muted>
 			<source src="./assets/face.c.0.webm" type="video/webm">
 		</video>
-		<video id="reflection-video-2" muted style="display: none;">
+		<video id="reflection-video-2" loop muted style="display: none;">
 			<source src="./assets/face.c.5.webm" type="video/webm">
 		</video>
 	</div>
