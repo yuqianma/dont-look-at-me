@@ -10,7 +10,7 @@ function App() {
       <div className="relative flex h-full max-w-full flex-1 overflow-hidden">
         <div className="flex h-full max-w-full flex-1 flex-col">
           <main className="relative h-full w-full transition-width flex flex-col overflow-auto items-stretch flex-1">
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden" style={{ overflowY: "auto" }}>
               <div className="flex flex-col text-sm">
                 
                 <div className="flex items-center justify-center gap-1 border-b border-black/10 bg-gray-50 p-3 text-gray-500">
@@ -18,6 +18,8 @@ function App() {
                 </div>
 
                 <MessageList />
+
+                <div className="h-32 md:h-48 flex-shrink-0"></div>
 
               </div>
             </div>

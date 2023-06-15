@@ -1,3 +1,6 @@
+import ReactMarkdown from "react-markdown";
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
+// import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 export const AIMessage = ({ message }) => {
 	return (<div
@@ -20,7 +23,29 @@ export const AIMessage = ({ message }) => {
 					<div className="min-h-[20px] flex flex-col items-start gap-4 whitespace-pre-wrap break-words">
 						<div className="markdown prose w-full break-words light">
 						{/* In this updated version of the game, we have added stars to the background and allowed the spaceship to move forward and backward using the up and down arrow keys. */}
-						{ message }
+						<ReactMarkdown
+							components={{
+								code({ inline, className, children, ...props}) {
+									const match = /language-(\w+)/.exec(className || '')
+									return !inline && match ? (
+										<SyntaxHighlighter
+											{...props}
+											// style={oneLight}
+											language={match[1]}
+											PreTag="div"
+										>
+											{String(children).replace(/\n$/, '')}
+										</SyntaxHighlighter>
+									) : (
+										<code {...props} className={className}>
+											{children}
+										</code>
+									)
+								}
+							}}
+						>
+							{ message }
+						</ReactMarkdown>
 						</div>
 					</div>
 				</div>
