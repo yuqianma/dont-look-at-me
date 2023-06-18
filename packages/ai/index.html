@@ -4,9 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Look At Me</title>
+    <style>
+      #webcam {
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: rotateY(180deg);
+        display: none;
+      }
+
+      .inactive {
+        filter: grayscale(1);
+      }
+
+    </style>
   </head>
-  <body>
+  <body class="inactive">
     <div id="root"></div>
+    <video id="webcam" autoplay playsinline></video>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

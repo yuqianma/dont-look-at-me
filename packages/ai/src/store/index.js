@@ -1,8 +1,9 @@
 import { createContext } from 'react';
 import { makeAutoObservable } from "mobx";
 import MESSAGES from "./message.json";
+import { handler } from "./detect";
 
-const MESSAGE_STREAM_STEP = 10;
+const MESSAGE_STREAM_STEP = 30;
 
 function scrollLatestIntoView() {
 	document.querySelector('#message-list-bottom').scrollIntoView();
@@ -16,6 +17,14 @@ class Store {
 
 	constructor() {
 		makeAutoObservable(this);
+
+		handler.onDetected = () => {
+			this.start();
+		};
+
+		handler.onNotDetected = () => {
+			this.stop();
+		};
 
 		// for debug
 		document.addEventListener("keydown", (e) => {
@@ -43,6 +52,8 @@ class Store {
 		}
 		this.isRunning = true;
 
+		document.body.classList.remove("inactive");
+
 		if (this.messages.length === MESSAGES.length) {
 			this._resetMessages();
 		}
@@ -64,7 +75,10 @@ class Store {
 			message.content += assistantMessage.content.slice(stringIndex, stringIndex + MESSAGE_STREAM_STEP);
 			stringIndex += MESSAGE_STREAM_STEP;
 			if (stringIndex >= assistantMessage.content.length) {
+				// next turn
+				// TODO: refactor
 				this.stop();
+				this.start();
 			}
 			scrollLatestIntoView();
 		}, 16);
@@ -77,6 +91,8 @@ class Store {
 		this.isRunning = false;
 		clearInterval(this._intervalId);
 		this._intervalId = null;
+
+		document.body.classList.add("inactive");
 	}
 
 }
