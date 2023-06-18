@@ -19,7 +19,7 @@ function App() {
 
                 <MessageList />
 
-                <div className="h-32 md:h-48 flex-shrink-0"></div>
+                <div id="message-list-bottom" className="h-32 md:h-48 flex-shrink-0"></div>
 
               </div>
             </div>
