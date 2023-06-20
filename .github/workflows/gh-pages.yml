@@ -30,8 +30,8 @@ jobs:
         mkdir dist
         mkdir dist/ai
         mkdir dist/me
-        cp -r ./packages/ai/dist/ ./dist/ai
-        cp -r ./packages/me/ ./dist/me
+        cp -r ./packages/ai/dist/* ./dist/ai/
+        cp -r ./packages/me/* ./dist/me/
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4
       with:
