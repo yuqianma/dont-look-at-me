@@ -1,0 +1,37 @@
+name: publish
+on:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [15]
+    steps:
+    - uses: actions/checkout@v3
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
+    - name: Install dependencies
+      run: pnpm install
+    - name: build ai part
+        working-directory: ./packages/ai
+        run: |
+          pnpm run build
+    - name: copy two dist
+        run: |
+          mkdir dist
+          mkdir dist/ai
+          mkdir dist/me
+          cp -r ./packages/ai/dist/ ./dist/ai
+          cp -r ./packages/me/ ./dist/me
+    - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: dist
