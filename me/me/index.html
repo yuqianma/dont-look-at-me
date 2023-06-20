@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Don't Look At Me When I'm Coding</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000;
+			color: #fff;
+			font-family: sans-serif;
+		}
+
+		#reflection-container {
+			position: fixed;
+			top: 0;
+			width: 100vw;
+			height: 100vh;
+			z-index: -1;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		#reflection-container video {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transform: rotateY(180deg);
+			opacity: 0.15;
+		}
+
+		#editor-container {
+			height: 100vh;
+			width: 100vw;
+		}
+
+		#face-debug-container {
+			position: fixed;
+			top: 0;
+			width: 100vw;
+			height: 100vh;
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			display: none;
+		}
+
+		#face-video-container {
+			position: relative;
+		}
+
+		#webcam {
+			clear: both;
+			display: block;
+			transform: rotateY(180deg);
+		}
+
+		.output_canvas {
+			transform: rotateY(180deg);
+		}
+
+		#faceBlendshapes {
+			position: fixed;
+			top: 0;
+			right: 0;
+		}
+
+		.blend-shapes-item {
+			display: flex;
+			align-items: center;
+			height: 20px;
+			width: 300px;
+		}
+
+		.blend-shapes-label {
+			display: flex;
+			width: 120px;
+			justify-content: flex-end;
+			align-items: center;
+			margin-right: 4px;
+		}
+
+		.blend-shapes-value {
+			display: flex;
+			height: 16px;
+			align-items: center;
+			background-color: #007f8b;
+		}
+
+		#cover {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: fixed;
+			width: 100vw;
+			height: 100vh;
+			top: 0;
+			left: 0;
+			opacity: 0.8;
+			background: #000;
+			z-index: 9999;
+		}
+	</style>
+	<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.38.0/min/vs/loader.js"></script>
+</head>
+<body>
+	<div id="reflection-container">
+		<video id="reflection-video-1" autoplay loop muted>
+			<source src="./assets/face.c.0.webm" type="video/webm">
+		</video>
+		<video id="reflection-video-2" loop muted style="display: none;">
+			<source src="./assets/face.c.5.webm" type="video/webm">
+		</video>
+	</div>
+	<div id="editor-container"></div>
+
+	<div id="face-debug-container">
+		<div id="face-video-container">
+			<video id="webcam" autoplay playsinline></video>
+			<canvas class="output_canvas" id="output_canvas" style="position: absolute; left: 0px; top: 0px;"></canvas>
+		</div>
+		<ul id="faceBlendshapes"></ul>
+	</div>
+
+	<div id="cover">Loading...</div>
+
+	<audio id="typing-audio" src="./assets/typing.mp3" preload="auto" loop style="display: none;"></audio>
+</body>
+<script src="./index.mjs" type="module"></script>
+</html>
