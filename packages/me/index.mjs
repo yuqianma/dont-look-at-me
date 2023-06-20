@@ -101,10 +101,7 @@ async function predictWebcam() {
   const radio = video.videoHeight / video.videoWidth;
   video.style.width = videoWidth + "px";
   video.style.height = videoWidth * radio + "px";
-  // canvasElement.style.width = videoWidth + "px";
-  // canvasElement.style.height = videoWidth * radio + "px";
-  // canvasElement.width = video.videoWidth;
-  // canvasElement.height = video.videoHeight;
+  
   
   let nowInMs = Date.now();
   if (lastVideoTime !== video.currentTime) {
@@ -112,35 +109,47 @@ async function predictWebcam() {
     results = faceLandmarker.detectForVideo(video, nowInMs);
 		window._results = results;
   }
-  // if (results.faceLandmarks) {
-  //   for (const landmarks of results.faceLandmarks) {
-  //     drawingUtils.drawConnectors(
-  //       landmarks,
-  //       FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
-  //       { color: "#FF3030" }
-  //     );
-  //     drawingUtils.drawConnectors(
-  //       landmarks,
-  //       FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
-  //       { color: "#30FF30" }
-  //     );
-  //     drawingUtils.drawConnectors(
-  //       landmarks,
-  //       FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS,
-  //       { color: "#FF3030" }
-  //     );
-  //     drawingUtils.drawConnectors(
-  //       landmarks,
-  //       FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS,
-  //       { color: "#30FF30" }
-  //     );
-  //   }
-  // }
+
+  if (IS_DEBUG) {
+    canvasElement.style.width = videoWidth + "px";
+    canvasElement.style.height = videoWidth * radio + "px";
+    canvasElement.width = video.videoWidth;
+    canvasElement.height = video.videoHeight;
+    if (results.faceLandmarks) {
+      for (const landmarks of results.faceLandmarks) {
+        drawingUtils.drawConnectors(
+          landmarks,
+          FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
+          { color: "#FF3030" }
+        );
+        drawingUtils.drawConnectors(
+          landmarks,
+          FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
+          { color: "#30FF30" }
+        );
+        drawingUtils.drawConnectors(
+          landmarks,
+          FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS,
+          { color: "#FF3030" }
+        );
+        drawingUtils.drawConnectors(
+          landmarks,
+          FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS,
+          { color: "#30FF30" }
+        );
+      }
+    }
+  }
 
   // display faceBlendshapes in document
   if (results.faceBlendshapes[0]) {
     const faceBlendshapes = results.faceBlendshapes[0].categories;
     displayDebugInfo(results);
+
+    // https://github.com/google/mediapipe/issues/1615#issuecomment-1173071408
+    // const x1 = results.faceLandmarks[0][33].x;
+    // const x2 = results.faceLandmarks[0][263].x;
+    // console.log(x2 - x1); // should be > 0.1
 
     const detected = faceBlendshapes.filter((s) => s.categoryName.startsWith("eyeLook")).every((shape) => shape.score < 0.6);
     if (detected) {
