@@ -9,6 +9,17 @@ let faceLandmarker;
 let webcamRunning = false;
 const videoWidth = 480;
 
+function preventAllKeyEvents() {
+  document.addEventListener("keydown", (event) => {
+    if (event.metaKey) {
+      return;
+    }
+    event.preventDefault();
+  });
+}
+
+preventAllKeyEvents();
+
 const faceBlendshapesElement = document.getElementById("faceBlendshapes");
 function displayDebugInfo(results) {
   if (!IS_DEBUG) {
@@ -62,12 +73,6 @@ const canvasElement = document.getElementById(
 );
 
 const canvasCtx = canvasElement.getContext("2d");
-
-document.addEventListener("keydown", (event) => {
-	if (event.code === "Space") {
-    start();
-	}
-});
 
 // Enable the live webcam view and start detection.
 function enableCam(event) {
